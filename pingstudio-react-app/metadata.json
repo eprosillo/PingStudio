@@ -1,8 +1,0 @@
-{
-  "name": "PingStudio 2.4 Sync email",
-  "description": "A personal workflow assistant for landscape, street, and photojournalism photographers to plan shoots, guide culling, and manage editing sessions.",
-  "requestFramePermissions": [
-    "camera",
-    "geolocation"
-  ]
-}
