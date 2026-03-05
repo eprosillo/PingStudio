@@ -1,4 +1,7 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { onAuthStateChanged, User } from "firebase/auth";
+import { auth } from './firebase';
+import Auth from './components/Auth';
 import Layout from './components/Layout';
 import SessionCard from './components/SessionCard';
 import SessionSelector from './components/SessionSelector';
@@ -562,6 +565,26 @@ function buildAskProPrompt(args: {
 }
 
 const App: React.FC = () => {
+  // Auth State
+  const [user, setUser] = useState<User | null>(null);
+  const [authLoading, setAuthLoading] = useState(true);
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+      setAuthLoading(false);
+    });
+    return () => unsubscribe();
+  }, []);
+
+  if (authLoading) {
+    return <div className="flex h-screen items-center justify-center bg-brand-black text-brand-white text-xs font-bold uppercase tracking-widest">Loading PingStudio...</div>;
+  }
+
+  if (!user) {
+    return <Auth />;
+  }
+
   const [activeTab, setActiveTab] = useState('dashboard');
   const [isFieldMode, setIsFieldMode] = useState<boolean>(false);
   const [feedbackLog, setFeedbackLog] = useState<FeedbackEntry[]>([]);

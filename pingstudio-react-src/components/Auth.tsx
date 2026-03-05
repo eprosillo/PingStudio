@@ -1,78 +1,81 @@
 import React, { useState } from 'react';
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
-import { initializeApp } from "firebase/app";
-
-// Your web app's Firebase configuration (re-using the config from index.tsx)
-const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-  appId: import.meta.env.VITE_FIREBASE_APP_ID,
-};
-
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
+import { auth } from '../firebase';
 
 const Auth: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [isLogin, setIsLogin] = useState(true); // Toggle between Login and Sign Up
 
-  const handleSignUp = async () => {
+  const handleAuth = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
     try {
-      await createUserWithEmailAndPassword(auth, email, password);
-      setError(null);
-      alert('Signed up successfully!');
-      // TODO: Redirect or show main app content
-    } catch (e: any) {
-      setError(e.message);
-    }
-  };
-
-  const handleSignIn = async () => {
-    try {
-      await signInWithEmailAndPassword(auth, email, password);
-      setError(null);
-      alert('Logged in successfully!');
-      // TODO: Redirect or show main app content
-    } catch (e: any) {
-      setError(e.message);
+      if (isLogin) {
+        await signInWithEmailAndPassword(auth, email, password);
+      } else {
+        await createUserWithEmailAndPassword(auth, email, password);
+      }
+    } catch (err: any) {
+      setError(err.message);
     }
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-brand-white text-brand-black p-4">
-      <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
-        <h2 className="text-2xl font-display text-brand-black mb-6 text-center">PingStudio Login</h2>
-        {error && <p className="text-red-500 text-center mb-4">{error}</p>}
-        <input
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          className="w-full p-3 mb-4 border border-brand-gray rounded-md focus:outline-none focus:ring-2 focus:ring-brand-blue"
-        />
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          className="w-full p-3 mb-6 border border-brand-gray rounded-md focus:outline-none focus:ring-2 focus:ring-brand-blue"
-        />
-        <button
-          onClick={handleSignIn}
-          className="w-full bg-brand-black text-brand-white font-semibold p-3 rounded-md hover:bg-gray-800 transition-colors mb-2"
-        >
-          Log In
-        </button>
-        <button
-          onClick={handleSignUp}
-          className="w-full bg-brand-blue text-brand-white font-semibold p-3 rounded-md hover:bg-coastal-blue transition-colors"
-        >
-          Sign Up
-        </button>
+    <div className="flex min-h-screen items-center justify-center bg-brand-black p-4 text-brand-white font-sans">
+      <div className="w-full max-w-md rounded-sm border border-white/10 bg-brand-black p-8 shadow-2xl">
+        <div className="mb-8 text-center">
+          <h1 className="text-3xl font-display uppercase tracking-widest text-brand-rose">PingStudio</h1>
+          <p className="mt-2 text-xs font-bold uppercase tracking-[0.2em] text-brand-gray">Production Logbook</p>
+        </div>
+
+        {error && (
+          <div className="mb-6 rounded-sm border border-red-500/20 bg-red-500/10 p-3 text-center text-[10px] font-bold uppercase tracking-widest text-red-400">
+            {error}
+          </div>
+        )}
+
+        <form onSubmit={handleAuth} className="space-y-4">
+          <div>
+            <label className="mb-2 block text-[9px] font-bold uppercase tracking-widest text-brand-gray">Email</label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full rounded-sm border border-white/10 bg-white/5 px-4 py-3 text-xs text-white outline-none transition-all focus:border-brand-rose focus:ring-1 focus:ring-brand-rose placeholder:text-white/20"
+              placeholder="ENTER EMAIL"
+              required
+            />
+          </div>
+          <div>
+            <label className="mb-2 block text-[9px] font-bold uppercase tracking-widest text-brand-gray">Password</label>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full rounded-sm border border-white/10 bg-white/5 px-4 py-3 text-xs text-white outline-none transition-all focus:border-brand-rose focus:ring-1 focus:ring-brand-rose placeholder:text-white/20"
+              placeholder="ENTER PASSWORD"
+              required
+            />
+          </div>
+
+          <button
+            type="submit"
+            className="mt-4 flex w-full items-center justify-center rounded-sm bg-brand-rose py-4 text-[10px] font-bold uppercase tracking-[0.2em] text-white shadow-lg transition-all hover:bg-[#c99595] active:scale-95"
+          >
+            {isLogin ? 'Log In' : 'Create Account'}
+          </button>
+        </form>
+
+        <div className="mt-6 text-center">
+          <button
+            onClick={() => setIsLogin(!isLogin)}
+            className="text-[9px] font-bold uppercase tracking-widest text-brand-gray hover:text-brand-rose underline underline-offset-4 decoration-brand-gray/30 hover:decoration-brand-rose"
+          >
+            {isLogin ? 'Need an account? Sign Up' : 'Already have an account? Log In'}
+          </button>
+        </div>
       </div>
     </div>
   );
